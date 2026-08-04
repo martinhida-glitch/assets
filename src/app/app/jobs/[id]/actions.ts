@@ -132,3 +132,28 @@ export async function reportJob(formData: FormData) {
   revalidatePath(`/app/jobs/${postId}`);
   redirect(`/app/jobs/${postId}?message=${encodeURIComponent("Reporte recibido. Gracias por ayudar a cuidar la comunidad.")}`);
 }
+
+const REVIEW_RATINGS = ["1", "2", "3", "4", "5"] as const;
+
+export async function submitReview(formData: FormData) {
+  const postId = assertUuid(String(formData.get("postId") || ""), "La publicación");
+  let rating: number;
+  let comment: string;
+  try {
+    rating = Number(formChoice(formData, "rating", REVIEW_RATINGS, "la calificación"));
+    comment = formText(formData, "comment", { max: 1000, optional: true });
+  } catch (error) {
+    jobError(postId, error instanceof FormValidationError ? error.message : "Revisá la calificación.");
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("submit_job_review", {
+    p_post_id: postId,
+    p_rating: rating,
+    p_comment: comment || null,
+  });
+  if (error) jobError(postId, "No pudimos guardar la calificación. Verificá que el trabajo esté completado.");
+  revalidatePath(`/app/jobs/${postId}`);
+  revalidatePath("/app/profile");
+  redirect(`/app/jobs/${postId}?message=${encodeURIComponent("Calificación publicada. Gracias por compartir tu experiencia.")}`);
+}

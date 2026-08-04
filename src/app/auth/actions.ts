@@ -41,6 +41,7 @@ export async function signUp(formData: FormData) {
     locality: string;
     email: string;
     password: string;
+    acceptedAt: string;
   };
 
   try {
@@ -51,6 +52,7 @@ export async function signUp(formData: FormData) {
       label: "la confirmación de contraseña",
     });
     if (password !== confirmation) throw new FormValidationError("Las contraseñas no coinciden.");
+    if (formData.get("acceptedLegal") !== "on") throw new FormValidationError("Debés aceptar los términos y la política de privacidad.");
 
     values = {
       fullName: formText(formData, "fullName", { min: 3, max: 120, label: "el nombre completo" }),
@@ -59,6 +61,7 @@ export async function signUp(formData: FormData) {
       locality: formText(formData, "locality", { min: 2, max: 100, label: "la localidad" }),
       email: formEmail(formData),
       password,
+      acceptedAt: new Date().toISOString(),
     };
   } catch (error) {
     errorRedirect("/register", error instanceof FormValidationError ? error.message : "Datos inválidos.");
@@ -76,6 +79,9 @@ export async function signUp(formData: FormData) {
         phone: values.phone,
         province: values.province,
         locality: values.locality,
+        accepted_legal: true,
+        accepted_at: values.acceptedAt,
+        legal_version: "2026-08-04-v1",
       },
     },
   });

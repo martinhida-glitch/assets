@@ -20,6 +20,7 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
           </div>
           <label>Correo electrónico<input name="email" type="email" autoComplete="email" required /></label>
           <div className="formGrid"><label>Contraseña<input name="password" type="password" autoComplete="new-password" minLength={8} required /></label><label>Repetir contraseña<input name="confirmPassword" type="password" autoComplete="new-password" minLength={8} required /></label></div><p className="fieldHint">Usá al menos 8 caracteres, con una letra y un número.</p>
+          <label className="legalCheck"><input name="acceptedLegal" type="checkbox" required/><span>Acepto los <Link href="/terminos" target="_blank">Términos de uso</Link> y la <Link href="/privacidad" target="_blank">Política de privacidad</Link>.</span></label>
           <button className="primaryButton full" type="submit">Crear cuenta</button>
         </form>
         <p className="privacyNote">La dirección exacta, el documento y el CV nunca se mostrarán públicamente.</p>
