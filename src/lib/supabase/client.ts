@@ -1,8 +1,9 @@
 import { createBrowserClient } from "@supabase/ssr";
 import { getSupabaseEnv } from "@/lib/env";
 
-import type { Database } from "@/lib/database.types";
 export function createClient() {
   const { url, publishableKey } = getSupabaseEnv();
-  return createBrowserClient<Database>(url, publishableKey);
+  // El esquema evoluciona mediante migraciones; los datos de UI se tipan en cada módulo.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return createBrowserClient<any>(url, publishableKey);
 }

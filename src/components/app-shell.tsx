@@ -1,16 +1,17 @@
+import Link from "next/link";
 import { Brand } from "@/components/brand";
 import { BottomNav } from "@/components/bottom-nav";
 import { BellIcon, PinIcon } from "@/components/icons";
 import { signOut } from "@/app/auth/actions";
 
-export function AppShell({ children, locality }: { children: React.ReactNode; locality?: string | null }) {
+export function AppShell({ children, locality, unreadCount = 0 }: { children: React.ReactNode; locality?: string | null; unreadCount?: number }) {
   return (
     <div className="appFrame">
       <header className="appHeader">
         <Brand compact app />
         <div className="appHeaderActions">
           <span className="localityPill"><PinIcon /> {locality || "Elegir localidad"}</span>
-          <button className="iconButton" aria-label="Notificaciones"><BellIcon /></button>
+          <Link className="iconButton notificationButton" aria-label="Notificaciones" href="/app/notifications"><BellIcon />{unreadCount>0&&<span>{unreadCount>9?"9+":unreadCount}</span>}</Link>
         </div>
       </header>
       <main className="appMain">{children}</main>

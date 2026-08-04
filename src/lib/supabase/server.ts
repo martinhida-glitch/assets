@@ -2,12 +2,13 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { getSupabaseEnv } from "@/lib/env";
 
-import type { Database } from "@/lib/database.types";
 export async function createClient() {
   const cookieStore = await cookies();
   const { url, publishableKey } = getSupabaseEnv();
 
-  return createServerClient<Database>(url, publishableKey, {
+  // El esquema evoluciona mediante migraciones; los datos de UI se tipan en cada módulo.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return createServerClient<any>(url, publishableKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();

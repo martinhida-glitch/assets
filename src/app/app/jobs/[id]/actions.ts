@@ -99,3 +99,36 @@ export async function changePostStatus(formData: FormData) {
   revalidatePath("/app", "layout");
   redirect(`/app/jobs/${postId}?message=${encodeURIComponent("Estado actualizado.")}`);
 }
+
+const REPORT_REASONS = ["spam", "fraud", "inappropriate", "unsafe", "duplicate", "other"] as const;
+
+export async function toggleSavedJob(formData: FormData) {
+  const postId = assertUuid(String(formData.get("postId") || ""), "La publicación");
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  const { data: existing } = await supabase.from("saved_jobs").select("post_id").eq("user_id", user.id).eq("post_id", postId).maybeSingle();
+  if (existing) await supabase.from("saved_jobs").delete().eq("user_id", user.id).eq("post_id", postId);
+  else await supabase.from("saved_jobs").insert({ user_id: user.id, post_id: postId });
+  revalidatePath(`/app/jobs/${postId}`);
+  revalidatePath("/app/activity");
+}
+
+export async function reportJob(formData: FormData) {
+  const postId = assertUuid(String(formData.get("postId") || ""), "La publicación");
+  let reason: (typeof REPORT_REASONS)[number];
+  let details: string;
+  try {
+    reason = formChoice(formData, "reason", REPORT_REASONS, "el motivo");
+    details = formText(formData, "details", { max: 1000, optional: true });
+  } catch (error) {
+    jobError(postId, error instanceof FormValidationError ? error.message : "Revisá el reporte.");
+  }
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  const { error } = await supabase.from("job_reports").insert({ post_id: postId, reporter_id: user.id, reason, details: details || null });
+  if (error && error.code !== "23505") jobError(postId, error.message);
+  revalidatePath(`/app/jobs/${postId}`);
+  redirect(`/app/jobs/${postId}?message=${encodeURIComponent("Reporte recibido. Gracias por ayudar a cuidar la comunidad.")}`);
+}

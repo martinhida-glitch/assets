@@ -19,3 +19,5 @@ export function TruckIcon(p: IconProps){return <svg {...base} {...p}><path d="M3
 export function HeartIcon(p: IconProps){return <svg {...base} {...p}><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg>}
 export function StarIcon(p: IconProps){return <svg {...base} {...p}><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.8 1-6.1-4.4-4.3 6.1-.9Z"/></svg>}
 export function FileIcon(p: IconProps){return <svg {...base} {...p}><path d="M6 3h8l4 4v14H6Z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>}
+export function BookmarkIcon(p: IconProps){return <svg {...base} {...p}><path d="M6 3h12v18l-6-4-6 4Z"/></svg>}
+export function FlagIcon(p: IconProps){return <svg {...base} {...p}><path d="M5 21V4M5 5h11l-2 4 2 4H5"/></svg>}

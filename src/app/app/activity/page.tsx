@@ -27,7 +27,7 @@ export default async function ActivityPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [{ data: posts }, { data: proposals }] = await Promise.all([
+  const [{ data: posts }, { data: proposals }, { data: savedRows }] = await Promise.all([
     supabase
       .from("job_posts")
       .select("*,categories(name,group_name,slug)")
@@ -38,11 +38,13 @@ export default async function ActivityPage() {
       .select("id,post_id,amount,amount_unit,message,status")
       .eq("proposer_id", user!.id)
       .order("created_at", { ascending: false }),
+    supabase.from("saved_jobs").select("post_id").eq("user_id", user!.id).order("created_at", { ascending: false }),
   ]);
 
   const typedPosts = (posts || []) as unknown as JobPost[];
   const typedProposals = (proposals || []) as ActivityProposal[];
   const proposalPostIds = [...new Set(typedProposals.map((proposal) => proposal.post_id))];
+  const savedPostIds = (savedRows || []).map((row) => row.post_id);
 
   const { data: proposalPosts } = proposalPostIds.length
     ? await supabase
@@ -54,6 +56,15 @@ export default async function ActivityPage() {
   const proposalPostMap = new Map(
     ((proposalPosts || []) as ProposalPost[]).map((post) => [post.id, post]),
   );
+
+  const { data: savedPosts } = savedPostIds.length
+    ? await supabase
+        .from("job_posts")
+        .select("*,categories(name,group_name,slug)")
+        .in("id", savedPostIds)
+        .eq("status", "open")
+    : { data: [] as JobPost[] };
+  const typedSaved = (savedPosts || []) as unknown as JobPost[];
 
   return (
     <section>
@@ -96,6 +107,16 @@ export default async function ActivityPage() {
             </Link>
           </div>
         )}
+      </div>
+
+      <div className="sectionTitle spaced">
+        <div>
+          <h2>Oportunidades guardadas</h2>
+          <p>Favoritos privados para revisar más tarde.</p>
+        </div>
+      </div>
+      <div className="jobList">
+        {typedSaved.length ? typedSaved.map((post) => <JobCard key={post.id} post={post} />) : <div className="emptyState"><h3>No guardaste oportunidades</h3><Link className="primaryButton small" href="/app/jobs">Explorar trabajos</Link></div>}
       </div>
 
       <div className="sectionTitle spaced">
