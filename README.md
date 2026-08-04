@@ -41,13 +41,14 @@ npm run check
 
 - No agregar claves service-role al frontend.
 - `.env.local` está ignorado por Git.
-- No ejecutar los SQL de `archive/sql_legacy/`; son únicamente históricos.
+- No ejecutar los SQL históricos sobre producción.
 - Los enlaces patrocinados solo aceptan HTTP/HTTPS.
 - Las redirecciones de confirmación solo aceptan rutas internas.
 
-Ver `docs/DEPLOY.md` para publicación y `docs/design_reference/README.md` para la identidad visual.
-
+Ver `docs/DEPLOY.md` para publicación.
 
 ## Rama de validación
 
-La rama `altoque-app-v3` se usa para validar CI de forma aislada hasta trasladar el código al repositorio exclusivo `altoque-app`.
+La rama `altoque-app-v3` contiene Premium V3 y se valida de forma aislada antes de trasladar el código al repositorio exclusivo `altoque-app`.
+
+Sincronización CI: 2026-08-04.
