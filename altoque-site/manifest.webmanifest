@@ -1,0 +1,12 @@
+{
+  "name": "ALTOQUE",
+  "short_name": "ALTOQUE",
+  "description": "Necesidades, servicios, changas y empleo local.",
+  "start_url": "/assets/",
+  "scope": "/assets/",
+  "display": "standalone",
+  "background_color": "#02070d",
+  "theme_color": "#020810",
+  "lang": "es-AR",
+  "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
