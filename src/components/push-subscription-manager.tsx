@@ -6,13 +6,13 @@ const VAPID_PUBLIC_KEY = "BHuG6c57uESkdrc_Y6agwVlq2-L3S16l0i7HIfkXEJAe_TMpwUo_U5
 
 type PushState = "checking" | "unsupported" | "denied" | "disabled" | "enabled" | "error";
 
-function applicationServerKey(value: string): Uint8Array {
+function applicationServerKey(value: string): ArrayBuffer {
   const padding = "=".repeat((4 - (value.length % 4)) % 4);
   const base64 = (value + padding).replace(/-/g, "+").replace(/_/g, "/");
   const raw = atob(base64);
   const output = new Uint8Array(new ArrayBuffer(raw.length));
   for (let index = 0; index < raw.length; index += 1) output[index] = raw.charCodeAt(index);
-  return output;
+  return output.buffer;
 }
 
 async function saveSubscription(subscription: PushSubscription) {
