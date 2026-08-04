@@ -5,18 +5,12 @@ import { BookmarkIcon, FlagIcon, PinIcon, StarIcon, UserIcon } from "@/component
 import { formatMoney, relativeTime, statusLabel } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 import type { JobPost, Proposal } from "@/lib/types";
-import {
-  acceptProposal,
-  changePostStatus,
-  reportJob,
-  submitProposal,
-  submitReview,
-  toggleSavedJob,
-} from "./actions";
+import { acceptProposal, changePostStatus, reportJob, submitProposal, submitReview, toggleSavedJob } from "./actions";
 
 type JobImage = { id: string; storage_path: string; sort_order: number };
 type PageMessages = { error?: string; message?: string };
 type ReviewRow = { rating: number; comment: string | null };
+type ContactRow = { counterpart_id: string; full_name: string; phone: string | null; locality: string | null; province: string | null };
 
 export default async function JobDetail({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<PageMessages> }) {
   const { id } = await params;
@@ -46,7 +40,16 @@ export default async function JobDetail({ params, searchParams }: { params: Prom
   ]);
   const ratings = ((authorReviews || []) as ReviewRow[]).map((review) => review.rating);
   const averageRating = ratings.length ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length : null;
-  const canReview = typed.status === "completed" && Boolean(acceptedProposal) && (isOwner || acceptedProposal?.proposer_id === user.id);
+  const isParticipant = Boolean(acceptedProposal) && (isOwner || acceptedProposal?.proposer_id === user.id);
+  const canReview = typed.status === "completed" && isParticipant;
+  const canSeeContact = ["assigned", "completed"].includes(typed.status) && isParticipant;
+
+  const { data: contactRows } = canSeeContact
+    ? await supabase.rpc("get_job_contact", { p_post_id: id })
+    : { data: [] as ContactRow[] };
+  const contact = ((contactRows || [])[0] || null) as ContactRow | null;
+  const phoneHref = contact?.phone ? contact.phone.replace(/[^\d+]/g, "") : "";
+  const whatsappNumber = contact?.phone ? contact.phone.replace(/\D/g, "") : "";
 
   const [{ data: saved }, { data: reported }] = !isOwner
     ? await Promise.all([
@@ -66,6 +69,8 @@ export default async function JobDetail({ params, searchParams }: { params: Prom
     {images?.length?<div className="imageGallery">{(images as JobImage[]).map((image)=><Image key={image.id} width={720} height={480} src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/job-images/${image.storage_path}`} alt="Foto de la publicación" unoptimized/>)}</div>:null}
 
     <article className="authorCard"><div className="authorAvatar">{author?.avatar_url?<Image src={author.avatar_url} alt="" width={70} height={70} unoptimized/>:<UserIcon/>}</div><div><span className="sponsoredLabel">PERFIL LOCAL</span><h2>{author?.full_name||"Usuario de ALTOQUE"}</h2>{author?.headline&&<strong>{author.headline}</strong>}<p>{author?.bio||"Este perfil todavía no agregó una presentación."}</p>{author?.identity_verified&&<span className="verified"><StarIcon /> Identidad verificada</span>}{averageRating!==null&&<span className="ratingSummary"><StarIcon /> {averageRating.toFixed(1)} · {ratings.length} {ratings.length===1?"calificación":"calificaciones"}</span>}</div></article>
+
+    {canSeeContact && <article className="contactPanel"><span className="sponsoredLabel">CONTACTO PRIVADO HABILITADO</span><h2>{contact?.full_name || "Contacto del trabajo"}</h2><p>Estos datos se muestran únicamente porque la propuesta fue aceptada.</p>{contact?.phone?<><strong>{contact.phone}</strong><small>{[contact.locality, contact.province].filter(Boolean).join(", ")}</small><div className="contactButtons"><a className="primaryButton small" href={`tel:${phoneHref}`}>Llamar</a>{whatsappNumber&&<a className="goldButton" href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer">WhatsApp</a>}</div></>:<p className="contactMissing">La otra persona todavía no cargó un teléfono.</p>}</article>}
 
     {canReview&&!ownReview&&<form action={submitReview} className="reviewPanel"><input type="hidden" name="postId" value={id}/><h2>Calificá este trabajo</h2><p>Tu opinión se publica en el perfil de la otra persona.</p><div className="ratingChoices" role="radiogroup" aria-label="Calificación">{[1,2,3,4,5].map((rating)=><label key={rating}><input type="radio" name="rating" value={rating} required/><span>{rating} ★</span></label>)}</div><textarea name="comment" maxLength={1000} placeholder="Contá brevemente cómo fue la experiencia (opcional)."/><button className="goldButton">Publicar calificación</button></form>}
     {ownReview&&<p className="reviewReceived">Ya calificaste este trabajo con <strong>{ownReview.rating} de 5 estrellas</strong>.</p>}
