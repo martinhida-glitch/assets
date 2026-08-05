@@ -1,0 +1,27 @@
+ALTOQUE BASE OFICIAL PREMIUM V3
+Fecha: 2026-08-04
+
+COMPLETADO
+- Proyecto Next.js único y ordenado.
+- Diseño premium implementado: negro/grafito, celeste-azul neón y dorado.
+- Landing, inicio, muro, trabajos, publicación, detalle, propuestas, actividad y perfil.
+- Registro, confirmación, recuperación y cambio de contraseña.
+- Tipos TypeScript alineados con el Supabase productivo.
+- Métricas anónimas de anuncios: impresión, clic y WhatsApp.
+- Prueba RPC reversible aprobada; no dejó datos temporales.
+- 40 archivos TS/TSX comprobados: 0 errores de sintaxis.
+- 78 imports locales comprobados: 0 rotos.
+- Typecheck independiente estricto con declaraciones externas temporales: aprobado.
+- Sin .env.local, service-role, JWT privados ni claves privadas.
+- Sin referencias a otros proyectos en el código activo.
+- Service worker limitado a rutas y recursos públicos seguros.
+
+NO EJECUTABLE EN ESTE ENTORNO
+- npm ci no pudo acceder a registry.npmjs.org: EAI_AGAIN.
+- Por ese motivo, lint y next build deben ejecutarse mediante CI o en un equipo con Internet.
+
+PENDIENTE EXTERNO
+- Crear repositorio exclusivo.
+- Ejecutar CI real.
+- Desplegar y configurar Supabase Auth con la URL definitiva.
+- Prueba visual en navegador y dispositivos reales.
