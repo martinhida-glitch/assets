@@ -86,6 +86,17 @@ export async function sendTestPush(_formData: FormData) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  const { count, error: subscriptionError } = await supabase
+    .from("push_subscriptions")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .is("disabled_at", null);
+
+  if (subscriptionError || !count) {
+    settingsError("Este teléfono todavía no está registrado. Activá push y esperá el mensaje de confirmación antes de enviar la prueba.");
+  }
+
   const { error } = await supabase.from("notifications").insert({
     user_id: user.id,
     type: "push_test",
@@ -93,7 +104,7 @@ export async function sendTestPush(_formData: FormData) {
     body: "La notificación push de prueba llegó correctamente a este dispositivo.",
     href: "/app/notifications/settings",
   });
-  if (error) settingsError("No pudimos enviar la prueba. Primero activá las notificaciones en este dispositivo.");
+  if (error) settingsError("No pudimos enviar la prueba push.");
   revalidatePath("/app", "layout");
   redirect(`/app/notifications/settings?message=${encodeURIComponent("Prueba enviada. Puede demorar unos segundos.")}`);
 }

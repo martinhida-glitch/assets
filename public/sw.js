@@ -1,4 +1,4 @@
-const CACHE = "altoque-premium-v4-push-20260804";
+const CACHE = "altoque-premium-v5-push-fix-20260804";
 const PUBLIC_CORE = ["/", "/login", "/register", "/manifest.webmanifest", "/altoque-logo.svg", "/icon-192.png"];
 const CACHEABLE_PATHS = new Set(PUBLIC_CORE);
 
@@ -13,6 +13,10 @@ self.addEventListener("activate", (event) => {
       .then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key))))
       .then(() => self.clients.claim()),
   );
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
 });
 
 self.addEventListener("fetch", (event) => {
