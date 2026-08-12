@@ -1,0 +1,35 @@
+name: Auditar APK Fénix en assets
+
+on:
+  pull_request:
+    branches: [master]
+    paths:
+      - '.github/workflows/audit-fenix-apk-bases.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    if: github.head_ref == 'agent/audit-fenix-apk-bases-20260803'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Inventariar APK
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p report
+          find . -type f -iname '*.apk' -print0 | sort -z | while IFS= read -r -d '' f; do
+            printf '%s\t%s\t%s\n' "$(sha256sum "$f" | awk '{print $1}')" "$(stat -c%s "$f")" "$f"
+          done | tee report/apk-inventory.tsv
+          grep -E '^(81f826e03934dd76da63018cf86685c5d9def3b20ecf74d1ca4480af4112c044|89ac333b1ef5e2a84b19b81ed654a24a80519dc4fdf7922f8826422166458d6b|033fbfe9ae794cef2f56dc4d7d95146a99f7a6b7d26c57a04baa717ef00ce4e2|db101e73a69364c6d87cd96b76a933b8ecd13cae2aac040b2484cc6c72458efa)' report/apk-inventory.tsv > report/matching-bases.tsv || true
+          echo COMPLETE > report/result.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: assets-apk-base-audit
+          path: report/
+          retention-days: 3
