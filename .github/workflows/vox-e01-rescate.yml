@@ -1,0 +1,29 @@
+name: VOX E01 - paquete descargable
+on:
+  push:
+    branches:
+      - vox-e01-recuperacion-20261102
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build-vox:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Instalar voz neural gratuita
+        run: python3 -m pip install --disable-pip-version-check edge-tts
+      - name: Montar el video y empaquetar archivos de CapCut
+        run: python3 vox-e01/assemble.py
+      - name: Publicar ZIP descargable en GitHub Actions
+        uses: actions/upload-artifact@v4
+        with:
+          name: VOX_E01_CAPCUT
+          path: VOX_E01_CAPCUT.zip
+          retention-days: 30
+      - name: Publicar descarga directa en GitHub Releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create vox-e01-kit-20261102 VOX_E01_CAPCUT.zip --title "VOX E01 - Kit de CapCut" --notes "Cuatro clips originales de HeyGen, una voz alternativa gratuita, una pista instrumental, MP4 completo y guion. La voz Theo aprobada no se pudo regenerar por limites de HeyGen." --target "$GITHUB_SHA"
